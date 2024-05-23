@@ -1,11 +1,37 @@
 import { Pressable, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { AntDesign } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
+import { getMyBucketList } from '../services/DbService';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ListScreen = ({navigation}) => {
 
     const goToAdd = () => { navigation.navigate("Add") }
+
+    const [bucketItems, setBucketItems] = useState([])
+
+    // useEffect(()=> {
+    //     // getMyBucketList()
+    //     // handleGettingOfData
+    // }, [])
+
+    useFocusEffect(
+        React.useCallback(() => {
+
+            handleGettingOfData()
+
+            return () => {
+                // do Nothing
+            };
+        }, [])
+    )
+
+    const handleGettingOfData = async () => {
+        var allData = await getMyBucketList()
+        setBucketItems(allData)
+    }
+
   return (
     <SafeAreaView>
         <View  style={styles.container}>
@@ -17,10 +43,20 @@ const ListScreen = ({navigation}) => {
 
 
             {/* THIS WILL LOOP FOR EACH ITEM */}
-            <TouchableOpacity style={styles.card} onPress={() => navigation.navigate("Details")}>
-                <Text>Title</Text>
-                <AntDesign name="star" size={24} color="orange" />
-            </TouchableOpacity>
+
+            {
+            bucketItems != [] ? (
+                bucketItems.map((item, index) => (
+                    <TouchableOpacity key={index} style={styles.card} onPress={() => navigation.navigate("Details")}>
+                        <Text>{item.title}</Text>
+                        {item.priority ? <AntDesign name="star" size={24} color="orange" /> : null}
+                    </TouchableOpacity>
+                ))
+            ): (
+                <Text> No Items Found Yet </Text>
+            )
+             }
+            
             {/* END LOOP */}
         </View>
        
@@ -41,7 +77,8 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        marginBottom: 10
     },
     addButton: {
         backgroundColor: 'white',
